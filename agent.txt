@@ -1,0 +1,278 @@
+# Text Refiner Chrome Extension - Technical Documentation
+
+## Overview
+The Text Refiner extension enhances text editing by providing AI-powered text refinement capabilities directly in web pages. Users can select text in input fields, textareas, or regular text elements and refine it using predefined prompts (rephrase, shorten, elaborate, formal tone, grammar fix) or custom prompts.
+
+## Architecture Refactor Summary
+
+### Key Improvements Made:
+1. **Unified Button System**: Single button implementation for both input and non-input elements
+2. **Simplified Data Storage**: Single source of truth with `storedTextData` object
+3. **Streamlined Event Handling**: Consolidated event listeners with shared logic
+4. **Improved Code Organization**: Clear separation of concerns with documented functions
+5. **Better Error Handling**: Consistent error handling and user feedback
+6. **Enhanced Maintainability**: Reduced code duplication and complexity
+
+## Core Components
+
+### 1. Data Storage (`storedTextData`)
+**Single source of truth for all text selection data:**
+```javascript
+storedTextData = {
+  text: string,              // Selected text content
+  element: HTMLElement,      // Target element containing the text
+  selection: Selection,      // Window selection object (null for input elements)
+  range: Range,             // Selection range (null for input elements)
+  inputStart: number,       // Start position for input elements
+  inputEnd: number,         // End position for input elements
+  isInputElement: boolean,  // Whether target is input/textarea
+  timestamp: number         // Selection timestamp
+}
+```
+
+### 2. Event Flow
+```
+User Text Selection
+    ↓
+handleTextSelection()
+    ↓
+Determine Element Type (input vs regular)
+    ↓
+Store Selection Data
+    ↓
+showRefineButton() - Unified positioning
+    ↓
+User Clicks Button
+    ↓
+showRefineMenu()
+    ↓
+User Selects Option
+    ↓
+handleRefineOptionClick()
+    ↓
+Send to Background Script
+    ↓
+replaceSelectedText() - Unified replacement
+```
+
+### 3. Key Functions
+
+#### Text Selection Handling
+- `handleTextSelection()`: Main handler for all text selection events
+- `isInputElement()`: Helper to identify input/textarea elements
+- `getElementFromSelection()`: Extract element from text selection
+
+#### Button Management
+- `showRefineButton(targetElement, isInput)`: Unified button display
+- `calculateInputButtonPosition()`: Position calculation for input elements
+- `calculateSelectionButtonPosition()`: Position calculation for text selections
+- `handleButtonClick()`: Button click handler
+- `preventEvent()`: Event propagation prevention
+
+#### Menu System
+- `showRefineMenu()`: Display refinement options
+- `createMenuItemElement()`: Create individual menu items
+- `hideRefineMenu()`: Clean up menu display
+- `hideRefineUI()`: Complete UI cleanup
+
+#### Text Replacement
+- `replaceSelectedText()`: Main replacement coordinator
+- `replaceTextInInputElement()`: Specialized input element handling
+- `replaceTextInRegularElement()`: Regular element text replacement
+
+#### Utility Functions
+- `checkExtensionContext()`: Validate extension state
+- `loadCustomPrompts()`: Load user-defined prompts
+- `getAllRefineOptions()`: Combine default and custom prompts
+- `showNotification()`: User feedback system
+- `resetButton()`: Button state management
+
+## Event Listeners
+
+### Unified Event Handling
+All events use the `shouldIgnoreEvent()` helper to prevent interference:
+
+1. **mouseup**: Triggers text selection detection (100ms delay)
+2. **keyup**: Handles keyboard-based selections 
+3. **selectionchange**: Responds to selection changes (150ms delay)
+4. **click**: Manages menu hiding behavior
+
+### Event Timing
+- Selection events use delays (100-150ms) to ensure selection is complete
+- Prevents rapid-fire event processing during user interaction
+- Debounces selection changes to improve performance
+
+## Text Selection Logic
+
+### Priority System:
+1. **Input Element Selection**: Checked first using `selectionStart/selectionEnd`
+2. **Regular Text Selection**: Falls back to `window.getSelection()`
+3. **Element Detection**: Identifies target element for positioning and replacement
+
+### Selection Validation:
+- Minimum text length requirements
+- Valid element detection
+- Position validation for input elements
+- Range validation for text selections
+
+## Button Positioning System
+
+### Input Elements:
+- Positioned beside the input field (right side preferred)
+- Falls back to left side if insufficient space
+- Accounts for viewport boundaries and scrolling
+- Maintains consistent gap spacing (8px)
+
+### Text Selections:
+- Positioned near the selected text
+- Above the selection (preferred) or below if no space
+- Centered horizontally on the selection
+- Responsive to viewport constraints
+
+### Positioning Calculations:
+```javascript
+// Input positioning
+left = rect.right + scrollX + gap
+top = rect.top + scrollY + (rect.height - buttonHeight) / 2
+
+// Selection positioning  
+left = rect.left + scrollX + (rect.width / 2) - 30
+top = rect.top + scrollY - 35 (or below if no space)
+```
+
+## Text Replacement Strategies
+
+### Input/Textarea Elements:
+1. **Use stored positions** if available (inputStart/inputEnd)
+2. **Find text by content** if positions unavailable
+3. **Fallback to current selection** as last resort
+4. **Validate positions** before replacement
+5. **Trigger input events** to notify frameworks
+
+### Regular Elements:
+1. **Range replacement**: Use stored selection range (preferred)
+2. **innerHTML replacement**: Direct HTML content replacement
+3. **textContent replacement**: Plain text replacement
+4. **Text node walking**: Deep text node search and replace
+
+### Event Triggering:
+- Input elements: `input`, `change`, `keyup` events
+- Editable elements: `input`, `change` events
+- Ensures framework reactivity (React, Vue, Angular)
+
+## Error Handling
+
+### Extension Context Validation:
+- Checks Chrome API availability before operations
+- Handles extension reload/update scenarios
+- Provides user-friendly error messages
+
+### Selection Validation:
+- Verifies stored data before operations
+- Handles missing or invalid selections gracefully
+- Fallback strategies for position calculation
+
+### Network Error Handling:
+- API timeout handling
+- Rate limiting responses
+- Connection failure recovery
+
+## Performance Optimizations
+
+### Event Debouncing:
+- Prevents excessive selection processing
+- Uses appropriate delays for different event types
+- Reduces DOM manipulation frequency
+
+### DOM Efficiency:
+- Minimal DOM queries through caching
+- Efficient element positioning calculations
+- Optimized text replacement algorithms
+
+### Memory Management:
+- Clears stored data when UI is hidden
+- Removes event listeners on cleanup
+- Prevents memory leaks in long-running pages
+
+## Browser Compatibility
+
+### Chrome Extension APIs:
+- Uses Manifest V3 compatible APIs
+- Background script for network requests
+- Content script for DOM manipulation
+
+### Cross-Site Compatibility:
+- Works with Shadow DOM elements
+- Handles iframe content
+- Compatible with SPA frameworks
+
+## Security Considerations
+
+### API Key Management:
+- Stored in Chrome sync storage
+- Not exposed to page content
+- Validated format checking
+
+### Content Isolation:
+- Extension context validation
+- Secure message passing
+- DOM isolation techniques
+
+## Debugging Features
+
+### Debug Utilities:
+```javascript
+window.textRefinerDebug.test()        // Extension status check
+window.textRefinerDebug.forceSelection() // Simulate text selection  
+window.textRefinerDebug.testInput()   // Test input element handling
+```
+
+### Comprehensive Logging:
+- Detailed console output for all operations
+- Performance timing information
+- Error context and stack traces
+
+## Testing Strategy
+
+### Manual Testing:
+- Input field selection and replacement
+- Regular text selection and replacement
+- Cross-element type validation
+- Positioning accuracy verification
+
+### Edge Cases:
+- Empty selections
+- Rapidly changing selections
+- Overlapping UI elements
+- Network failure scenarios
+
+## Future Enhancements
+
+### Planned Features:
+- Custom positioning preferences
+- Advanced text formatting options
+- Keyboard shortcuts
+- Batch text processing
+
+### Architecture Improvements:
+- TypeScript migration
+- Enhanced error recovery
+- Performance metrics collection
+- A/B testing framework
+
+## Configuration Options
+
+### Default Prompts:
+1. **Rephrase**: Clarity and engagement improvement
+2. **Shorten**: Concise content creation
+3. **Elaborate**: Detailed explanation expansion
+4. **Formal**: Professional tone adjustment
+5. **Grammar**: Grammar and clarity correction
+
+### Custom Prompts:
+- User-defined refinement options
+- Persistent storage in Chrome sync
+- Icon and naming customization
+- Export/import functionality
+
+This refactored architecture provides a robust, maintainable, and user-friendly text refinement experience while ensuring compatibility across different web page types and frameworks.

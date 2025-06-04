@@ -28,18 +28,27 @@
   min-width: 80px !important;
   text-align: center !important;
   box-sizing: border-box !important;
+  transform: none !important;
 }
 
 /* Smaller button variant for input elements */
 .text-refiner-button.input-positioned {
-  padding: 6px 10px !important;
-  font-size: 12px !important;
-  min-width: 70px !important;
-  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  min-width: 60px !important;
+  border-radius: 4px !important;
+  height: 28px !important;
+  width: 60px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: absolute !important;
+  background: #4f46e5 !important;
 }
 
 .text-refiner-button.input-positioned::before {
-  font-size: 10px !important;
+  font-size: 9px !important;
+  margin-right: 3px !important;
 }
 
 .text-refiner-button:hover:not(:disabled) {
