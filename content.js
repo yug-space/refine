@@ -919,62 +919,24 @@ function replaceTextInRegularElement(element, originalText, newText) {
  * Show notification to user
  */
 function showNotification(message, type = 'info') {
-  console.log('Text Refiner: Showing notification:', message, type);
-  
-  // Remove existing notification
-  const existing = document.querySelector('.text-refiner-notification');
-  if (existing) {
-    existing.remove();
-  }
-  
-  const notification = document.createElement('div');
-  notification.className = `text-refiner-notification ${type}`;
-  notification.textContent = message;
-  
-  document.body.appendChild(notification);
-  
-  // Auto-hide based on type
-  const timeouts = { success: 3000, error: 5000, warning: 4000 };
-  setTimeout(() => {
-    notification.remove();
-  }, timeouts[type] || 3000);
+  // Notifications were used in the original version to display status messages
+  // on the page. To simplify the extension, these now only log to the console.
+  console.log(`Text Refiner [${type}]:`, message);
 }
 
 /**
  * Show loading notification with spinner
  */
 function showLoadingNotification(message) {
-  console.log('Text Refiner: Showing loading notification:', message);
-  
-  // Remove existing notification
-  const existing = document.querySelector('.text-refiner-notification');
-  if (existing) {
-    existing.remove();
-  }
-  
-  const notification = document.createElement('div');
-  notification.className = 'text-refiner-notification loading';
-  
-  const spinner = document.createElement('div');
-  spinner.className = 'text-refiner-spinner';
-  
-  const text = document.createElement('span');
-  text.textContent = message;
-  
-  notification.appendChild(spinner);
-  notification.appendChild(text);
-  
-  document.body.appendChild(notification);
+  // Loading notifications are reduced to console logs for simplicity.
+  console.log('Text Refiner [loading]:', message);
 }
 
 /**
  * Hide notification
  */
 function hideNotification() {
-  const notification = document.querySelector('.text-refiner-notification');
-  if (notification) {
-    notification.remove();
-  }
+  // In the simplified build notifications are not rendered, so this is a no-op.
 }
 
 // Debug utilities for testing

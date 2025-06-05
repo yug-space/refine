@@ -223,16 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
   };
   
   function showStatus(message, type) {
-    console.log('Text Refiner: Showing status:', { message, type });
-    statusDiv.textContent = message;
-    statusDiv.className = `status ${type}`;
-    statusDiv.style.display = 'block';
-    
-    if (type === 'success') {
-      setTimeout(() => {
-        console.log('Text Refiner: Hiding success status');
-        statusDiv.style.display = 'none';
-      }, 3000);
-    }
+    // Keep popup logic simple: replace visual notifications with console logs.
+    console.log(`Text Refiner popup [${type}]:`, message);
   }
 }); 
