@@ -253,7 +253,10 @@ function handleTextSelection() {
   
   if (finalSelectedText.length > 0 && targetElement) {
     console.log('🚀 Text found, storing and showing refine button');
-    
+
+    // Remove previous UI before storing new selection
+    hideRefineUI();
+
     // Store text data - single source of truth
     storedTextData = {
       text: finalSelectedText,
@@ -267,14 +270,12 @@ function handleTextSelection() {
     };
     
     console.log('💾 Stored data:', storedTextData);
-    
+
     // Show unified button
     showRefineButton(targetElement, hasInputSelection);
   } else {
     console.log('❌ No text selected');
-    if (!finalSelectedText) {
-      hideRefineUI();
-    }
+    hideRefineUI();
   }
 }
 
@@ -310,8 +311,12 @@ function showRefineButton(targetElement, isInput = false) {
   console.log('🔧 Text Refiner: Showing refine button');
   console.log('🎯 Target element:', targetElement.tagName, targetElement.type || 'N/A');
   console.log('📝 Is input element:', isInput);
-  
-  hideRefineUI(); // Remove any existing UI
+
+  // Remove any existing button without clearing stored data
+  if (refineButton) {
+    refineButton.remove();
+    refineButton = null;
+  }
   
   try {
     // Create refine button
